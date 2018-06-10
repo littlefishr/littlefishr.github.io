@@ -1,98 +1,37 @@
-extends includes/layout.pug
-
-block top_img
-  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
-  if (top_img && page.top_img !== false)
-    - var flag = top_img === true ? 'no-bg' : undefined
-    div#top-container(style=`background-image: url(${top_img})` class=flag)
-      include ./includes/header.pug
-      #post-info
-        #post-title= page.title || _p('no_title')
-        #post-meta
-          if (theme.post_meta.date_type)
-            - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
-            time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
-          if (theme.post_meta.categories && page.categories.data.length > 0)
-            if (theme.post_meta.date_type)
-              span.post-meta__separator |
-            each item, index in page.categories.data
-              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
-              a(href=url_for(item.path)).post-meta__categories #[=item.name]
-              if (index < page.categories.data.length - 1)
-                 i.fa.fa-angle-right(aria-hidden="true")
-          if (theme.disqus.enable && theme.disqus.count)
-            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
-              span.post-meta__separator |
-            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
-            a(href=url_for(page.path) + '#disqus_thread')
-              span.disqus-comment-count(data-disqus-identifier=page.path)
-          if (theme.wordcount && theme.wordcount.enable)
-            .post-meta-wordcount
-              span= _p('post.wordcount') + ': '
-              span.word-count= wordcount(page.content)
-              span.post-meta__separator |
-              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
-  else
-    div#top-container.plain
-      include ./includes/header.pug
-
-block content
-  article#post(class="")
-    if (!top_img)
-      #post-title.plain= page.title || _p('no_title')
-      #post-meta
-        if (theme.post_meta.date_type)
-          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
-          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
-        if (theme.post_meta.categories && page.categories.data.length > 0)
-          if (theme.post_meta.date_type)
-            span.post-meta__separator |
-          each item, index in page.categories.data
-            i.fa.fa-inbox(aria-hidden="true")
-            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
-            if (index < page.categories.data.length - 1)
-                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
-        if (theme.disqus.enable && theme.disqus.count)
-          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
-            span.post-meta__separator |
-          i.fa.fa-comment-o(aria-hidden="true")
-          a(href=url_for(page.path) + '#disqus_thread')
-            span.disqus-comment-count(data-disqus-identifier=page.path)
-        if (theme.wordcount && theme.wordcount.enable)
-          span.post-meta__separator |
-          span.post-meta-wordcount
-            span= _p('post.wordcount') + ': '
-            span.word-count= wordcount(page.content)
-            span.post-meta__separator |
-            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
-    #post-content.article-container!= page.content
-  if (theme.post_copyright && theme.post_copyright.enable)
-    .post-copyright
-      .post-copyright__author
-        span.post-copyright-meta= _p('post.copyright.author') + ": "
-        span.post-copyright-info
-          a(href=`mailto:${config.email}`) #[=config.author]
-      .post-copyright__type
-        span.post-copyright-meta= _p('post.copyright.link') + ": "
-        span.post-copyright-info
-          a(href=url_for(page.permalink)) #[=page.permalink]
-      .post-copyright__notice
-        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
-        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
-  if (theme.post_meta.tags)
-    .post-meta__tag-list
-      each item, index in page.tags.data
-        a(href=url_for(item.path)).post-meta__tags #[=item.name]
-  if (theme.QR_code)
-    if (theme.QR_code.length > 0)
-      .post-qr-code
-        each item in theme.QR_code
-          .post-qr-code-item
-            img.post-qr-code__img(src=(item.itemlist||item).img)
-            .post-qr-code__desc=(item.itemlist||item).text
-  include includes/share/index.pug
-  include includes/pagination.pug
-  if (theme.adv && theme.adv.enable)
-    .post-adv!= theme.adv.info
-  if page.comments !== false
-    include includes/comments/index.pug
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="IDEA动态调试smali"><meta name="keywords" content="Android"><meta name="author" content="littlefisher,undefined"><meta name="copyright" content="littlefisher"><title>IDEA动态调试smali | littlefisher</title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css?version=1.5.4"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  localSearch: undefined
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x00-反编译Apk"><span class="toc-number">1.</span> <span class="toc-text">0x00 反编译Apk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-配置IDEA"><span class="toc-number">2.</span> <span class="toc-text">0x01 配置IDEA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配置APP运行环境"><span class="toc-number">3.</span> <span class="toc-text">配置APP运行环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tips"><span class="toc-number">4.</span> <span class="toc-text">Tips</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">littlefisher</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">8</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">2</span></a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container" style="background-image: url(true)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">littlefisher</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">IDEA动态调试smali</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-04-01</time></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>使用<code>IDEA + smalidea + baksmali</code>动态调试Apk，可以很方便的查看寄存器或者参数的值<br><a id="more"></a></p>
+<h2 id="0x00-反编译Apk"><a href="#0x00-反编译Apk" class="headerlink" title="0x00 反编译Apk"></a>0x00 反编译Apk</h2><p>假设安卓端应用在没有加壳的情况下，使用baksmali反编译apk文件为smali文件。</p>
+<p>下载地址<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">https://bitbucket.org/JesusFreke/smali/downloads/</a></p>
+<p>不知道为什么我的Java运行2.2*版本会报错，所以我使用baksmali2.0.2.jar</p>
+<p>运行<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar baksmali-2.0.2.jar flag.apk -o Debug\src</span><br></pre></td></tr></table></figure></p>
+<p>-o 参数表示 输出文件夹。</p>
+<h2 id="0x01-配置IDEA"><a href="#0x01-配置IDEA" class="headerlink" title="0x01 配置IDEA"></a>0x01 配置IDEA</h2><p>首先需要安装smalidea插件，下载地址同上</p>
+<p>点击<code>File-&gt;Setting-&gt;Plugins-&gt;Install plugin from disk...</code><br>然后找到你下载的jar文件就可以了，<br><img src="https://i.imgur.com/LHMxSDZ.png" alt=""><br>然后重启IDEA。<br>完成之后，打开IDEA<code>File-&gt;New-&gt;Project from Existing Sources</code><br>打开刚才反汇编的Debug文件夹，一路next即可，<br>然后</p>
+<ol>
+<li>在IDEA中右键src文件夹，<code>Mark Directory as-&gt;Sources root</code></li>
+<li>点击<code>File -&gt; Project structure</code> 配置JDK</li>
+<li>点击<code>Run -&gt; Edit Configurations</code> 选择Remote 接下来只需要更改端口为8700</li>
+</ol>
+<p><img src="https://i.imgur.com/nlBZl2s.png" alt=""></p>
+<h2 id="配置APP运行环境"><a href="#配置APP运行环境" class="headerlink" title="配置APP运行环境"></a>配置APP运行环境</h2><p>这里可以选用Root掉的真机，亦可以使用模拟器<br>打开adb的DDMS（我的启动器是Android-sdk\tools目录下的monitor.bat）<br>此时模拟器打开要调试的APP<br><img src="https://i.imgur.com/3iG3Bxg.png" alt=""><br>运行<br><code>adb shell am start -D -n com.example.administrator.myapplication/com.example.administrator.flag.MainActivity</code></p>
+<p>后面有关App的信息根据自己而定。此时查看模拟器界面已经是等待调试界面。</p>
+<p>最后，在IDEA中设置好需要的断点。点击<code>Run-&gt;Debug &quot;Demo&quot;</code></p>
+<p>在模拟器输入pass之后，就可以在IDEA中调试了。<br><img src="https://i.imgur.com/MEiOA4J.png" alt=""><br>用户名密码也显示出来了。</p>
+<h2 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h2><p>这种方法成功的前提是Apk具有Debug属性。如果没有<br>可借助<a href="https://ibotpeaches.github.io/Apktool/install/" target="_blank" rel="noopener">Apktool</a>工具</p>
+<p>首先反编译</p>
+<p><code>java -jar apktool_2.0.0.jar d -d flag.apk -o out/</code></p>
+<p>进入out文件中，更改AndroidManifest.xml中的android:debuggable=”true”<br><img src="https://i.imgur.com/Bzj4CDz.png" alt=""></p>
+<p>修改好之后编译<br><code>java -jar apktool_2.0.0.jar b -o new_flag.apk</code></p>
+<p>之后进行签名<br>生成签名：</p>
+<p><code>keytool -genkey -v -keystore androidse.keystore(名字随便起) -alias androidsekey(别名，任意) -keyalg RSA -keysize 2048 -validity 365</code></p>
+<p><code>jarsigner -verbose -keystore mykeystore -signedjar new_flag_signed.apk(目标名字) new_flag.apk(要签名的apk) androidsekey(别名)</code></p>
+<p>就可以了</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">littlefisher</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://yoursite.com/2018/04/01/IDEA动态调试smali/">http://yoursite.com/2018/04/01/IDEA动态调试smali/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/04/10/XSS/"><i class="fa fa-chevron-left">  </i><span>小白谈XSS</span></a></div><div class="next-post pull-right"><a href="/2017/11/10/php对象注入小结/"><span>php对象注入</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2013 - 2018 By littlefisher</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="/js/third-party/anime.min.js"></script><script src="/js/third-party/jquery.min.js"></script><script src="/js/third-party/jquery.fancybox.min.js"></script><script src="/js/third-party/velocity.min.js"></script><script src="/js/third-party/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.5.4"></script><script src="/js/fancybox.js?version=1.5.4"></script><script src="/js/sidebar.js?version=1.5.4"></script><script src="/js/copy.js?version=1.5.4"></script><script src="/js/fireworks.js?version=1.5.4"></script><script src="/js/transition.js?version=1.5.4"></script><script src="/js/scroll.js?version=1.5.4"></script><script src="/js/head.js?version=1.5.4"></script><script src="/live2dw/lib/L2Dwidget.min.js?0c58a1486de42ac6cc1c59c7d98ae887"></script><script>L2Dwidget.init({"model":"z16","width":150,"height":300,"scaling":1,"opacityDefault":0.7,"opacityHover":1,"mobileShow":true,"mobileScaling":0.5,"position":"right","horizontalOffset":0,"verticalOffset":-20,"id":"live2dcanvas","deviceJsSource":"local","pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/"});</script></body></html>
