@@ -12,7 +12,7 @@
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">PASSWORD</span> <span class="keyword">FROM</span> ABTEST <span class="keyword">WHERE</span> USERNAME=<span class="string">'name'</span>;</span><br></pre></td></tr></table></figure>
 <p>内容包括我在测试过程中遇到的一些问题，废话不多说，看……</p>
 <h1 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h1><p>因为一开始我对Oracle数据库可以说是完全不了解的，所以我就学习了一些基础内容。</p>
-<h2 id="注释符号"><a href="#注释符号" class="headerlink" title="注释符号"></a>注释符号</h2><p>单行注释符号 –<br>多行注释符号 /**/</p>
+<h2 id="注释符号"><a href="#注释符号" class="headerlink" title="注释符号"></a>注释符号</h2><p>单行注释符号 <code>--</code><br>多行注释符号 <code>/**/</code></p>
 <h2 id="dual表"><a href="#dual表" class="headerlink" title="dual表"></a>dual表</h2><p>dual是Oracle中的虚拟表（只有一行一列：X），且每个用户都可使用，是sys用户下的一张内部表，所有用户都可以访问。<br><img src="https://i.imgur.com/GHJExhe.png" alt=""></p>
 <h2 id="判断Oracle数据库"><a href="#判断Oracle数据库" class="headerlink" title="判断Oracle数据库"></a>判断Oracle数据库</h2><h3 id="第一种方法就是通过上面提到的dual表来判断"><a href="#第一种方法就是通过上面提到的dual表来判断" class="headerlink" title="第一种方法就是通过上面提到的dual表来判断"></a>第一种方法就是通过上面提到的dual表来判断</h3><p>可以通过下面的语句来判断：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and (select count(*) from dual)&gt;0</span><br></pre></td></tr></table></figure>
