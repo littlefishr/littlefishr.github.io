@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="PHP-CGI解析漏洞环境搭建及复现"><meta name="keywords" content="Web"><meta name="author" content="littlefisher,undefined"><meta name="copyright" content="littlefisher"><title>PHP-CGI解析漏洞环境搭建及复现 | littlefisher</title><link rel="shortcut icon" href="/favicon.ico"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css?version=1.5.4"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  localSearch: undefined
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#测试环境"><span class="toc-number">1.</span> <span class="toc-text">测试环境</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装编译工具及库文件"><span class="toc-number">2.</span> <span class="toc-text">安装编译工具及库文件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装PCRE"><span class="toc-number">3.</span> <span class="toc-text">安装PCRE</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装Nginx"><span class="toc-number">4.</span> <span class="toc-text">安装Nginx</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装php-修改配置"><span class="toc-number">5.</span> <span class="toc-text">安装php,修改配置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#漏洞测试"><span class="toc-number">6.</span> <span class="toc-text">漏洞测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CGI-Fastcgi-PHP-CGI-PHP-FPM"><span class="toc-number">7.</span> <span class="toc-text">CGI\Fastcgi\PHP-CGI\PHP-FPM</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">littlefisher</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">15</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">7</span></a></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(http://119.29.91.207/mianma.png)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">littlefisher</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a></span></div><div id="post-info"><div id="post-title">PHP-CGI解析漏洞环境搭建及复现</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2020-02-24</time></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>学习到文件上传部分看到的这个漏洞，就搭个环境测试一下。之前也没搭建过Nginx，所以还是有一点阻碍的，还好最终仍是完成了。</p>
+<a id="more"></a>
+<h1 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h1><p>该漏洞与nginx、php版本无关,属于用户配置不当造成的解析漏洞<br>CentOS 7.6(64位)+ php 5.4 + nginx 1.6.2</p>
+<h1 id="安装编译工具及库文件"><a href="#安装编译工具及库文件" class="headerlink" title="安装编译工具及库文件"></a>安装编译工具及库文件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum -y install make zlib zlib-devel gcc-c++ libtool openssl openssl-devel</span><br></pre></td></tr></table></figure>
+<h1 id="安装PCRE"><a href="#安装PCRE" class="headerlink" title="安装PCRE"></a>安装PCRE</h1><p>PCRE 作用是让 Nginx 支持 Rewrite (URL重写)功能。</p>
+<ul>
+<li>下载、解压 PCRE 安装包</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget http://downloads.sourceforge.net/project/pcre/pcre/8.35/pcre-8.35.tar.gz</span><br><span class="line">tar zxvf pcre-8.35.tar.gz</span><br><span class="line">cd pcre-8.35</span><br></pre></td></tr></table></figure>
+<ul>
+<li>编译安装</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./configure</span><br><span class="line">sudo make</span><br><span class="line">sudo make install</span><br><span class="line">pcre-config --version</span><br></pre></td></tr></table></figure>
+<h1 id="安装Nginx"><a href="#安装Nginx" class="headerlink" title="安装Nginx"></a>安装Nginx</h1><ul>
+<li>下载安装Nginx</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget http://nginx.org/download/nginx-1.6.2.tar.gz</span><br><span class="line">tar zxvf nginx-1.6.2.tar.gz</span><br><span class="line">cd nginx-1.6.2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>编译安装</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure</span><br><span class="line">sudo make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>Nginx默认安装目录为：/usr/local/nginx/sbin/<br>查看Nginx版本(/usr/local/nginx/sbin/)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nginx -v</span><br></pre></td></tr></table></figure>
+<p>启动Nginx(/usr/local/nginx/sbin/)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./nginx</span><br></pre></td></tr></table></figure>
+<p>Nginx已经启动</p>
+<p><img src="https://i.imgur.com/YBttfLr.png" alt=""></p>
+<h1 id="安装php-修改配置"><a href="#安装php-修改配置" class="headerlink" title="安装php,修改配置"></a>安装php,修改配置</h1><ul>
+<li>安装php,直接安装的默认版本5.4</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install php</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改php.ini配置</li>
+</ul>
+<p><img src="https://i.imgur.com/10vESG2.png" alt=""></p>
+<ul>
+<li>配置Nginx针对php文件使用FastCGI进程来执行（nginx.conf）</li>
+</ul>
+<p><img src="https://i.imgur.com/mFtlwPJ.png" alt=""></p>
+<p>修改nginx配置后都需重启nginx</p>
+<ul>
+<li>启动php-cgi</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php-cgi -b 127.0.0.1:9000</span><br></pre></td></tr></table></figure>
+<h1 id="漏洞测试"><a href="#漏洞测试" class="headerlink" title="漏洞测试"></a>漏洞测试</h1><p>直接在文件夹下建了一个1.txt,内容为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php phpinfo();?&gt;</span><br></pre></td></tr></table></figure>
+<p>当访问1.txt/2.php时，php-cgi发现自己找不到2.php这个文件，就很慌的把1.txt当成php文件解析了。 </p>
+<p><img src="https://i.imgur.com/mVLsBwk.png" alt=""></p>
+<h1 id="CGI-Fastcgi-PHP-CGI-PHP-FPM"><a href="#CGI-Fastcgi-PHP-CGI-PHP-FPM" class="headerlink" title="CGI\Fastcgi\PHP-CGI\PHP-FPM"></a>CGI\Fastcgi\PHP-CGI\PHP-FPM</h1><p>nginx通过Fastcgi对接php，Fastcgi是什么呢？与CGI又有什么区别？PHP-CGI又是什么？FPM又与Fastcgi有什么关系？<br>首先简单的来说Fastcgi是一个和HTTP协议一样通信协议，进行数据交换的一个通道。不同于HTTP协议（浏览器和服务器中间件进行数据交换），fastcgi协议是服务器中间件和某个语言后端进行数据交换的协议。<br>CGI与Fastcgi相似也是一种通信协议,但是Fastcgi比CGI性能更好。<br>PHP-FPM与PHP-CGI也是相似，PHP-FPM更优<br>FPM是一个fastcgi协议解析器，Nginx等服务器中间件将用户请求按照fastcgi的规则打包好通过TCP传给FPM,FPM按照fastcgi的协议将TCP流解析成真正的数据。<br>如有理解错误还请指正。</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">littlefisher</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://yoursite.com/2020/02/24/(Nginx)PHP-CGI解析漏洞/">http://yoursite.com/2020/02/24/(Nginx)PHP-CGI解析漏洞/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Web/">Web</a></div><nav id="pagination"><div class="next-post pull-right"><a href="/2020/01/07/Oracel注入第三篇/"><span>Oracle注入第三篇：盲注</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By littlefisher</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="/js/third-party/anime.min.js"></script><script src="/js/third-party/jquery.min.js"></script><script src="/js/third-party/jquery.fancybox.min.js"></script><script src="/js/third-party/velocity.min.js"></script><script src="/js/third-party/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.5.4"></script><script src="/js/fancybox.js?version=1.5.4"></script><script src="/js/sidebar.js?version=1.5.4"></script><script src="/js/copy.js?version=1.5.4"></script><script src="/js/fireworks.js?version=1.5.4"></script><script src="/js/transition.js?version=1.5.4"></script><script src="/js/scroll.js?version=1.5.4"></script><script src="/js/head.js?version=1.5.4"></script><script src="/live2dw/lib/L2Dwidget.min.js?0c58a1486de42ac6cc1c59c7d98ae887"></script><script>L2Dwidget.init({"model":"z16","width":150,"height":300,"scaling":1,"opacityDefault":0.7,"opacityHover":1,"mobileShow":true,"mobileScaling":0.5,"position":"right","horizontalOffset":0,"verticalOffset":-20,"id":"live2dcanvas","deviceJsSource":"local","pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/"});</script></body></html>
